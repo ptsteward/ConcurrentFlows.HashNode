@@ -5,9 +5,10 @@ using System.Threading.Channels;
 
 namespace WebApplication1.Services
 {
-    public class Transformer<TInput, TOutput>
+
+    public class StreamingTransformer<TInput, TOutput> : IStreamingTransformer<TInput, TOutput>
     {
-        public Transformer(Func<TInput, IAsyncEnumerable<TOutput>> transform)
+        public StreamingTransformer(Func<TInput, IAsyncEnumerable<TOutput>> transform)
         {
             Transform = transform ?? throw new ArgumentNullException(nameof(transform));
             Initialize();
@@ -23,7 +24,7 @@ namespace WebApplication1.Services
             ResultsSource = outputChannel.Writer;
             Results = outputChannel.Reader;
         }
-        
+
         public Task ExecuteComplete { get; private set; }
         public ChannelReader<TOutput> Results { get; private set; }
         public ChannelWriter<TInput> Source { get; private set; }
@@ -38,7 +39,7 @@ namespace WebApplication1.Services
             {
                 await foreach (var input in Input.ReadAllAsync())
                 {
-                    await foreach(var output in Transform(input))
+                    await foreach (var output in Transform(input))
                     {
                         await ResultsSource.WriteAsync(output);
                     }

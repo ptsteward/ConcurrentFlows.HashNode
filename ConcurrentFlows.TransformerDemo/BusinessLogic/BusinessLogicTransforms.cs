@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WebApplication1.Model;
 
@@ -16,7 +17,8 @@ namespace WebApplication1.BusinessLogic
                     Result = c
                 };
             }
-            yield return default;
+            if (!input.Payload.Any())
+                yield return default;
         }
     }
 }

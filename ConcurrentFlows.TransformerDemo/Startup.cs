@@ -15,7 +15,7 @@ namespace WebApplication1
         {
 
             services.AddControllers();
-            services.AddScoped(typeof(Transformer<,>));
+            services.AddScoped(typeof(IStreamingTransformer<,>), typeof(StreamingTransformer<,>));
             services.AddSingleton<Func<DataInput, IAsyncEnumerable<DataOutput>>>(BusinessLogicTransforms.TransformDataInputToDataOutput);
         }
 
