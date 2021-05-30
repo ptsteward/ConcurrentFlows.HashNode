@@ -40,14 +40,17 @@ namespace ConcurrentFlows.MessageHandling
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.MessageHandling", Version = "v1" });
             });
-            services.AddSignalR().AddAzureSignalR();
-            var connectionString = "";
-            var topic = "";
+            services.AddSignalR().AddAzureSignalR("Endpoint=https://xxx.service.signalr.net;AccessKey=xxx;Version=1.0;");
+            var connectionString = "Endpoint=sb://xxx.servicebus.windows.net/;SharedAccessKeyName=xxx;SharedAccessKey=xxx";
+            var topic = "something";
             services.AddMessenger(new[]
             {
                 new ServicebusPublisher<EventMessage>(new TopicClient(connectionString, topic))
             },
-            sp => new SampleHubPublisher(sp.GetRequiredService<IHubContext<SampleHub, ISampleHubClient>>()));
+            new List<Func<IServiceProvider, IPublisher<EventMessage>>>()
+            {
+                sp => new SampleHubPublisher(sp.GetRequiredService<IHubContext<SampleHub, ISampleHubClient>>())
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -73,16 +76,22 @@ namespace ConcurrentFlows.MessageHandling
     public static class RegistrationExtensions
     {
         public static void AddMessenger<TMessage>(
-            this IServiceCollection services, 
-            IEnumerable<IPublisher<TMessage>> publishers,
-            params Func<IServiceProvider, IPublisher<TMessage>>[] publishersFactory) 
+            this IServiceCollection services,
+            IEnumerable<IPublisher<TMessage>> publishers = null,
+            IEnumerable<Func<IServiceProvider, IPublisher<TMessage>>> publisherFactories = null)
             where TMessage : class
         {
+            if ((publishers is null || !publishers.Any()) && (publisherFactories is null || !publisherFactories.Any()))
+                throw new ArgumentException($"Must register at least one publisher for {typeof(TMessage).Name}");
+
+            publishers ??= Enumerable.Empty<IPublisher<TMessage>>();
+            publisherFactories ??= Enumerable.Empty<Func<IServiceProvider, IPublisher<TMessage>>>();
+
             foreach (var publisher in publishers)
             {
                 services.AddSingleton(publisher);
             }
-            foreach(var factory in publishersFactory)
+            foreach (var factory in publisherFactories)
             {
                 services.AddSingleton(factory);
             }

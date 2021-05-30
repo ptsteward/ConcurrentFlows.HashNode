@@ -5,6 +5,6 @@ namespace ConcurrentFlows.MessageHandling.Interfaces
 {
     public interface ISampleHubClient
     {
-        Task ClientEvent(EventMessage message)
+        Task ClientEvent(EventMessage message);
     }
 }
