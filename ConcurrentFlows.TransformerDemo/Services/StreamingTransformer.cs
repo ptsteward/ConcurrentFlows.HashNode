@@ -33,7 +33,7 @@ namespace WebApplication1.Services
         private ChannelWriter<TOutput> ResultsSource { get; set; }
         private Func<TInput, IAsyncEnumerable<TOutput>> Transform { get; set; }
 
-        protected async Task ExecuteAsync()
+        private async Task ExecuteAsync()
         {
             while (!Input.Completion.IsCompleted)
             {
