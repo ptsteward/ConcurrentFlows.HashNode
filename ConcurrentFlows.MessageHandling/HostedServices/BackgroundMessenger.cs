@@ -16,12 +16,12 @@ namespace ConcurrentFlows.MessageHandling.HostedServices
         where TMessage : class
     {
         private readonly ILogger<BackgroundMessenger<TMessage>> logger;
-        private readonly IMessenger<TMessage> messenger;
+        private readonly IMessengerReader<TMessage> messenger;
         private readonly IEnumerable<IPublisher<TMessage>> publishers;
 
         public BackgroundMessenger(
             ILogger<BackgroundMessenger<TMessage>> logger,
-            IMessenger<TMessage> messenger,
+            IMessengerReader<TMessage> messenger,
             IEnumerable<IPublisher<TMessage>> publishers)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

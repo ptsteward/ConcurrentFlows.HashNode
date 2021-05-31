@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace ConcurrentFlows.MessageHandling.Channels
 {
     public class Messenger<TMessage>
-        : IMessenger<TMessage>
+        : IMessengerReader<TMessage>, IMessengerWriter<TMessage>
         where TMessage : class
     {
         private readonly ChannelWriter<TMessage> writer;

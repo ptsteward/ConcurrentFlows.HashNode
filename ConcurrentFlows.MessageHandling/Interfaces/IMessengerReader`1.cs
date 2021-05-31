@@ -4,8 +4,7 @@ using System.Threading.Tasks;
 
 namespace ConcurrentFlows.MessageHandling.Interfaces
 {
-    public interface IMessenger<TMessage>
-        : IMessengerWriter<TMessage>
+    public interface IMessengerReader<TMessage>
         where TMessage : class
     {
         Task Shutdown();

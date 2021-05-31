@@ -33,8 +33,9 @@ namespace ConcurrentFlows.MessageHandling
                 services.AddSingleton(publisher);
             foreach (var factory in factories)
                 services.AddSingleton(factory);
-            services.AddSingleton<IMessenger<TMessage>, Messenger<TMessage>>();
-            services.AddSingleton<IMessengerWriter<TMessage>>(sp => sp.GetRequiredService<IMessenger<TMessage>>());
+            services.AddSingleton<Messenger<TMessage>>();
+            services.AddSingleton<IMessengerWriter<TMessage>>(sp => sp.GetRequiredService<Messenger<TMessage>>());
+            services.AddSingleton<IMessengerReader<TMessage>>(sp => sp.GetRequiredService<Messenger<TMessage>>());
             services.AddHostedService<BackgroundMessenger<TMessage>>();
         }
     }
