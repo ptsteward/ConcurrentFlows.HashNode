@@ -40,14 +40,13 @@ namespace ConcurrentFlows.MessageHandling.HostedServices
             }
             finally
             {
-                messenger.Complete();
-                await messenger.Completion;
+                await messenger.Shutdown();
             }
         }
 
         private async Task ReadAndPublish(CancellationToken stoppingToken)
         {
-            while (!messenger.Completion.IsCompleted && !stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 stoppingToken.ThrowIfCancellationRequested();
                 if (await messenger.WaitToReadAsync(stoppingToken))

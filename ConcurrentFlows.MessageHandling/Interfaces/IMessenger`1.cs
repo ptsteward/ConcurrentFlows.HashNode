@@ -8,8 +8,7 @@ namespace ConcurrentFlows.MessageHandling.Interfaces
         : IMessengerWriter<TMessage>
         where TMessage : class
     {
-        Task Completion { get; }
-        void Complete();
+        Task Shutdown();
         ValueTask<bool> WaitToReadAsync(CancellationToken token);
         IAsyncEnumerable<TMessage> ReadAllAsync(CancellationToken token);
     }
