@@ -34,7 +34,7 @@ namespace ConcurrentFlows.MessageMultiplexing.HostedServices
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-            messageFactoryMap = messageFactory?.MessageFactoryMap ?? throw new ArgumentNullException(nameof(messageFactory));
+            messageFactoryMap = messageFactory?.MessageFactoryMap ?? throw new ArgumentNullException(nameof(messageFactoryMap));
             this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 

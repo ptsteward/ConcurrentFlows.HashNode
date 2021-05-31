@@ -43,7 +43,7 @@ namespace ConcurrentFlows.MessagingLibrary.HostedServices
             }
         }
 
-        private async Task ReadAndPublish(CancellationToken stoppingToken)
+        private async ValueTask ReadAndPublish(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
