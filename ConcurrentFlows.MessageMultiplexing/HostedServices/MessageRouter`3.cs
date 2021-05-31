@@ -17,6 +17,7 @@ namespace ConcurrentFlows.MessageMultiplexing.HostedServices
     public class MessageRouter<TEnum, TPayload, TInternalMessage>
         : BackgroundService
         where TEnum : Enum
+        where TPayload : class
         where TInternalMessage : InternalMessage<TEnum, TPayload>
     {
         private readonly ILogger<MessageRouter<TEnum, TPayload, TInternalMessage>> logger;

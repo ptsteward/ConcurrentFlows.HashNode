@@ -1,4 +1,5 @@
 using ConcurrentFlows.MessageMultiplexing.Hubs;
+using ConcurrentFlows.MessageMultiplexing.Interfaces;
 using ConcurrentFlows.MessageMultiplexing.Messages;
 using ConcurrentFlows.MessageMultiplexing.Model;
 using ConcurrentFlows.MessageMultiplexing.Model.Messages.External;
@@ -33,6 +34,7 @@ namespace ConcurrentFlows.MessageMultiplexing
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.MessageRouter", Version = "v1" });
             });
             services.AddSignalR().AddAzureSignalR("Endpoint=https://xxx.service.signalr.net;AccessKey=xxx;Version=1.0;");
+            services.AddSingleton<IMetadataRepository, MetadataRepository>();
             services.AddMessenger<EntityCreatedMessage>(new[] { typeof(SampleHubPublisher) });
             services.AddMessenger<EntityUpdatedMessage>(new[] { typeof(SampleHubPublisher) });
             services.AddMessenger<EntityDeletedMessage>(new[] { typeof(SampleHubPublisher) });

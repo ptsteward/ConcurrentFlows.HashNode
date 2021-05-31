@@ -12,25 +12,35 @@ namespace ConcurrentFlows.MessageMultiplexing.Services
 {
     public class SampleHubMessageFactory : IMessageFactory<SampleHubMessageType, SampleEntity, SampleHubInternalMessage>
     {
-        public SampleHubMessageFactory()
+        private readonly IMetadataRepository metadataRepository;
+
+        public SampleHubMessageFactory(IMetadataRepository metadataRepository)
         {
+            this.metadataRepository = metadataRepository ?? throw new ArgumentNullException(nameof(metadataRepository));
+
             MessageFactoryMap = new Dictionary<SampleHubMessageType, Func<SampleHubInternalMessage, IAsyncEnumerable<object>>>()
-            {
-                { SampleHubMessageType.Created, msg => GetCreatedMessage(msg) },
-                { SampleHubMessageType.Updated, msg => GetUpdatedMessage(msg) },
-                { SampleHubMessageType.Deleted, msg => GetDeletedMessage(msg) }
-            }.ToImmutableDictionary();
+        {
+            { SampleHubMessageType.Created, msg => GetCreatedMessage(msg) },
+            { SampleHubMessageType.Updated, msg => GetUpdatedMessage(msg) },
+            { SampleHubMessageType.Deleted, msg => GetDeletedMessage(msg) }
+        }.ToImmutableDictionary();
         }
 
-        public IAsyncEnumerable<EntityCreatedMessage> GetCreatedMessage(InternalMessage<SampleHubMessageType, SampleEntity> internalMessage)
-            => new[] { new EntityCreatedMessage(internalMessage.Payload) }.ToAsyncEnumerable();
+        public ImmutableDictionary<SampleHubMessageType, Func<SampleHubInternalMessage, IAsyncEnumerable<object>>> MessageFactoryMap { get; }
 
-        public IAsyncEnumerable<EntityUpdatedMessage> GetUpdatedMessage(InternalMessage<SampleHubMessageType, SampleEntity> internalMessage)
-            => new[] { new EntityUpdatedMessage(internalMessage.Payload) }.ToAsyncEnumerable();
+        public async IAsyncEnumerable<EntityCreatedMessage> GetCreatedMessage(InternalMessage<SampleHubMessageType, SampleEntity> internalMessage)
+        {
+            var metadata = await metadataRepository.GetMetadadataAsync(internalMessage.Payload.Id);
+            yield return new EntityCreatedMessage(internalMessage.Payload, metadata);
+        }
+
+        public async IAsyncEnumerable<EntityUpdatedMessage> GetUpdatedMessage(InternalMessage<SampleHubMessageType, SampleEntity> internalMessage)
+        {
+            var metadata = await metadataRepository.GetMetadadataAsync(internalMessage.Payload.Id);
+            yield return new EntityUpdatedMessage(internalMessage.Payload, metadata);
+        }
 
         public IAsyncEnumerable<EntityDeletedMessage> GetDeletedMessage(InternalMessage<SampleHubMessageType, SampleEntity> internalMessage)
             => new[] { new EntityDeletedMessage(internalMessage.Payload.Id) }.ToAsyncEnumerable();
-
-        public ImmutableDictionary<SampleHubMessageType, Func<SampleHubInternalMessage, IAsyncEnumerable<object>>> MessageFactoryMap { get; }
     }
 }
