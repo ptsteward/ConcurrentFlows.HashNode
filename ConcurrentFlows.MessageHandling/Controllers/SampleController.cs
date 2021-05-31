@@ -20,10 +20,7 @@ namespace ConcurrentFlows.MessageHandling.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string input)
         {
-            var msg = new EventMessage()
-            {
-                Payload = input
-            };
+            var msg = new EventMessage(input);
             await writer.WriteAsync(msg);
             return Ok();
         }
