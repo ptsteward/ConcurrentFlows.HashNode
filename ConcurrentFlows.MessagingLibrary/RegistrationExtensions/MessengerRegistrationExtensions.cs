@@ -1,13 +1,12 @@
-﻿using ConcurrentFlows.MessageHandling.Channels;
-using ConcurrentFlows.MessageHandling.HostedServices;
-using ConcurrentFlows.MessageHandling.Interfaces;
-using ConcurrentFlows.MessageHandling.Services;
+﻿using ConcurrentFlows.MessagingLibrary.Handlers;
+using ConcurrentFlows.MessagingLibrary.HostedServices;
+using ConcurrentFlows.MessagingLibrary.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ConcurrentFlows.MessageHandling
+namespace ConcurrentFlows.MessagingLibrary.RegistrationExtensions
 {
     public static class MessengerRegistrationExtensions
     {
@@ -38,5 +37,5 @@ namespace ConcurrentFlows.MessageHandling
             services.AddSingleton<IMessengerReader<TMessage>>(sp => sp.GetRequiredService<Messenger<TMessage>>());
             services.AddHostedService<BackgroundMessenger<TMessage>>();
         }
-    }
+    }    
 }

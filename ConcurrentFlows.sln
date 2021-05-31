@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.Transformer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentFlows.MessageHandling", "ConcurrentFlows.MessageHandling\ConcurrentFlows.MessageHandling.csproj", "{140B3998-7291-43DB-8043-DD3D8C77037B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentFlows.MessagingLibrary", "ConcurrentFlows.MessagingLibrary\ConcurrentFlows.MessagingLibrary.csproj", "{FF3F8ED2-A7AF-450A-951F-8619CA8325A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.MessageMultiplexing", "ConcurrentFlows.MessageMultiplexing\ConcurrentFlows.MessageMultiplexing.csproj", "{B03E8BC3-87AC-4F57-9226-9015539D24C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{140B3998-7291-43DB-8043-DD3D8C77037B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{140B3998-7291-43DB-8043-DD3D8C77037B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{140B3998-7291-43DB-8043-DD3D8C77037B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF3F8ED2-A7AF-450A-951F-8619CA8325A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF3F8ED2-A7AF-450A-951F-8619CA8325A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF3F8ED2-A7AF-450A-951F-8619CA8325A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF3F8ED2-A7AF-450A-951F-8619CA8325A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B03E8BC3-87AC-4F57-9226-9015539D24C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B03E8BC3-87AC-4F57-9226-9015539D24C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B03E8BC3-87AC-4F57-9226-9015539D24C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B03E8BC3-87AC-4F57-9226-9015539D24C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

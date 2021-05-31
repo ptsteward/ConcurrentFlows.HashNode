@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ConcurrentFlows.MessageHandling.Interfaces
+namespace ConcurrentFlows.MessagingLibrary.Interfaces
 {
     public interface IMessengerReader<TMessage>
         where TMessage : class

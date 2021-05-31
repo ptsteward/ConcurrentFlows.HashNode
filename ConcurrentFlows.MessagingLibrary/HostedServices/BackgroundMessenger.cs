@@ -1,5 +1,4 @@
-﻿using ConcurrentFlows.MessageHandling.Interfaces;
-using ConcurrentFlows.MessageHandling.Services;
+﻿using ConcurrentFlows.MessagingLibrary.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ConcurrentFlows.MessageHandling.HostedServices
+namespace ConcurrentFlows.MessagingLibrary.HostedServices
 {
     public class BackgroundMessenger<TMessage>
         : BackgroundService

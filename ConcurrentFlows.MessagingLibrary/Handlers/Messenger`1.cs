@@ -1,10 +1,10 @@
-﻿using ConcurrentFlows.MessageHandling.Interfaces;
+﻿using ConcurrentFlows.MessagingLibrary.Interfaces;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace ConcurrentFlows.MessageHandling.Channels
+namespace ConcurrentFlows.MessagingLibrary.Handlers
 {
     public class Messenger<TMessage>
         : IMessengerReader<TMessage>, IMessengerWriter<TMessage>

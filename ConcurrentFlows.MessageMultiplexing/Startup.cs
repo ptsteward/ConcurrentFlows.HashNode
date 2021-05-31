@@ -1,16 +1,19 @@
-using ConcurrentFlows.MessageHandling.Hubs;
-using ConcurrentFlows.MessageHandling.Messages;
-using ConcurrentFlows.MessageHandling.Services;
+using ConcurrentFlows.MessageMultiplexing.Hubs;
+using ConcurrentFlows.MessageMultiplexing.Messages;
+using ConcurrentFlows.MessageMultiplexing.Model;
+using ConcurrentFlows.MessageMultiplexing.Model.Messages.External;
+using ConcurrentFlows.MessageMultiplexing.Model.Messages.Internal;
+using ConcurrentFlows.MessageMultiplexing.Publisher;
+using ConcurrentFlows.MessageMultiplexing.Services;
+using ConcurrentFlows.MessagingLibrary.RegistrationExtensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using ConcurrentFlows.MessagingLibrary.RegistrationExtensions;
 
-namespace ConcurrentFlows.MessageHandling
+namespace ConcurrentFlows.MessageMultiplexing
 {
     public class Startup
     {
@@ -27,20 +30,13 @@ namespace ConcurrentFlows.MessageHandling
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.MessageHandling", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.MessageRouter", Version = "v1" });
             });
             services.AddSignalR().AddAzureSignalR("Endpoint=https://xxx.service.signalr.net;AccessKey=xxx;Version=1.0;");
-            var connectionString = "Endpoint=sb://xxx.servicebus.windows.net/;SharedAccessKeyName=xxx;SharedAccessKey=xxx";
-            var topic = "something";
-            services.AddMessenger<EventMessage>(
-                publishers: new[]
-                {
-                    typeof(SampleHubPublisher)
-                },
-                instances: new[]
-                {
-                    new ServicebusPublisher<EventMessage>(new TopicClient(connectionString, topic))
-                });
+            services.AddMessenger<EntityCreatedMessage>(new[] { typeof(SampleHubPublisher) });
+            services.AddMessenger<EntityUpdatedMessage>(new[] { typeof(SampleHubPublisher) });
+            services.AddMessenger<EntityDeletedMessage>(new[] { typeof(SampleHubPublisher) });
+            services.AddMessageRouter<SampleHubMessageType, SampleEntity, SampleHubInternalMessage>(typeof(SampleHubMessageFactory));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -49,16 +45,18 @@ namespace ConcurrentFlows.MessageHandling
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ConcurrentFlows.MessageHandling v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ConcurrentFlows.MessageRouter v1"));
             }
 
             app.UseHttpsRedirection();
+
             app.UseRouting();
+
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<SampleHub>("/hub");
             });
         }
     }

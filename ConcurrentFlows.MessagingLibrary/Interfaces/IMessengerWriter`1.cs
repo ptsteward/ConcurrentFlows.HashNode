@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace ConcurrentFlows.MessageHandling.Interfaces
+namespace ConcurrentFlows.MessagingLibrary.Interfaces
 {
     public interface IMessengerWriter<TMessage> where TMessage : class
     {

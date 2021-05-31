@@ -1,6 +1,7 @@
 ﻿using ConcurrentFlows.MessageHandling.Hubs;
 using ConcurrentFlows.MessageHandling.Interfaces;
 using ConcurrentFlows.MessageHandling.Messages;
+using ConcurrentFlows.MessagingLibrary.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;

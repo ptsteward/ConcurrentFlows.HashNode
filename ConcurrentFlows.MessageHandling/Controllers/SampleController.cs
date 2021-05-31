@@ -1,5 +1,5 @@
-﻿using ConcurrentFlows.MessageHandling.Interfaces;
-using ConcurrentFlows.MessageHandling.Messages;
+﻿using ConcurrentFlows.MessageHandling.Messages;
+using ConcurrentFlows.MessagingLibrary.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
