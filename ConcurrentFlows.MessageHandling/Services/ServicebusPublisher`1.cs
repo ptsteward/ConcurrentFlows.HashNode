@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
-using Newtonsoft.Json;
 using System;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ConcurrentFlows.MessageHandling.Services
@@ -21,7 +21,7 @@ namespace ConcurrentFlows.MessageHandling.Services
             => new Message
             {
                 MessageId = Guid.NewGuid().ToString(),
-                Body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message))
+                Body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message))
             };
     }
 }

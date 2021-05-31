@@ -2,10 +2,10 @@
 using ConcurrentFlows.MessageHandling.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,11 +66,11 @@ namespace ConcurrentFlows.MessageHandling.HostedServices
             try
             {
                 await publisher.PublishAsync(message);
-                logger.LogInformation($"Published to {publisher.GetType().Name} with message {JsonConvert.SerializeObject(message)}");
+                logger.LogInformation($"Published to {publisher.GetType().Name} with message {JsonSerializer.Serialize(message)}");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Error occurred while publishing to {publisher.GetType().Name} with message {JsonConvert.SerializeObject(message)}");
+                logger.LogError(ex, $"Error occurred while publishing to {publisher.GetType().Name} with message {JsonSerializer.Serialize(message)}");
             }
         }
     }

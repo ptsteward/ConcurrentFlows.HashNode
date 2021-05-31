@@ -1,4 +1,4 @@
 ﻿namespace ConcurrentFlows.MessageHandling.Messages
 {
-    public record EventMessage(string payload);
+public record EventMessage(string payload);
 }
