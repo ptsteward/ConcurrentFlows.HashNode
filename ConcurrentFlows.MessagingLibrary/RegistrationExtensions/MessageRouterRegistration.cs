@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ConcurrentFlows.MessagingLibrary.RegistrationExtensions
 {
-    public static class MessageRouterRegistrationExtensions
+    public static class MessageRouterRegistration
     {
         public static void AddMessageRouter<TEnum, TPayload, TInternalMessage>(this IServiceCollection services,
             Type messageFactory = null,

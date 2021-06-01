@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ConcurrentFlows.MessagingLibrary.RegistrationExtensions
 {
-    public static class MessengerRegistrationExtensions
+    public static class MessengerRegistration
     {
         public static void AddMessenger<TMessage>(
             this IServiceCollection services,
