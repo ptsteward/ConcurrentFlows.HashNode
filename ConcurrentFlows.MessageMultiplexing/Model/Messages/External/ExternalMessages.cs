@@ -1,6 +1,4 @@
-﻿using ConcurrentFlows.MessageMultiplexing.Model;
-
-namespace ConcurrentFlows.MessageMultiplexing.Model.Messages.External
+﻿namespace ConcurrentFlows.MessageMultiplexing.Model.Messages.External
 {
     public record EntityCreatedMessage(SampleEntity Entity, string Metadata);
 

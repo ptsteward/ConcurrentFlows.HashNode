@@ -1,11 +1,11 @@
-﻿using ConcurrentFlows.MessageMultiplexing.Messages;
+﻿using ConcurrentFlows.MessagingLibrary.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace ConcurrentFlows.MessageMultiplexing.Interfaces
+namespace ConcurrentFlows.MessagingLibrary.Interfaces
 {
-    public interface IMessageFactory<TEnum, TPayload, TInternalMessage>        
+    public interface IMessageFactory<TEnum, TPayload, TInternalMessage>
         where TEnum : Enum
         where TPayload : class
         where TInternalMessage : InternalMessage<TEnum, TPayload>

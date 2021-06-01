@@ -1,13 +1,12 @@
-﻿using ConcurrentFlows.MessageMultiplexing.HostedServices;
-using ConcurrentFlows.MessageMultiplexing.Interfaces;
-using ConcurrentFlows.MessageMultiplexing.Messages;
-using ConcurrentFlows.MessagingLibrary.Handlers;
+﻿using ConcurrentFlows.MessagingLibrary.Handlers;
+using ConcurrentFlows.MessagingLibrary.HostedServices;
 using ConcurrentFlows.MessagingLibrary.Interfaces;
+using ConcurrentFlows.MessagingLibrary.Model;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 
-namespace ConcurrentFlows.MessageMultiplexing
+namespace ConcurrentFlows.MessagingLibrary.RegistrationExtensions
 {
     public static class MessageRouterRegistrationExtensions
     {
@@ -22,7 +21,7 @@ namespace ConcurrentFlows.MessageMultiplexing
                 throw new ArgumentException($"Must provide a {nameof(messageFactory)}.");
             if (messageFactory is not null && factoryFactory is not null)
                 throw new ArgumentException($"Must only provide one {nameof(messageFactory)}.");
-            if ((messageFactory is not null) &&
+            if (messageFactory is not null &&
                 !messageFactory.GetInterfaces().Contains(typeof(IMessageFactory<TEnum, TPayload, TInternalMessage>)))
                 throw new ArgumentException($"{nameof(messageFactory)} must of type {typeof(IMessageFactory<,,>).Name}<{typeof(TEnum).Name},{typeof(TPayload).Name},{typeof(TInternalMessage).Name}>");
 

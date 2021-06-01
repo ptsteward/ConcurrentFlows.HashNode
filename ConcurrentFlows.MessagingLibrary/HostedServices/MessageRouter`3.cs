@@ -1,6 +1,5 @@
-﻿using ConcurrentFlows.MessageMultiplexing.Interfaces;
-using ConcurrentFlows.MessageMultiplexing.Messages;
-using ConcurrentFlows.MessagingLibrary.Interfaces;
+﻿using ConcurrentFlows.MessagingLibrary.Interfaces;
+using ConcurrentFlows.MessagingLibrary.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,7 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ConcurrentFlows.MessageMultiplexing.HostedServices
+namespace ConcurrentFlows.MessagingLibrary.HostedServices
 {
     public class MessageRouter<TEnum, TPayload, TInternalMessage>
         : BackgroundService

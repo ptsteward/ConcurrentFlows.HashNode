@@ -1,4 +1,4 @@
-﻿using ConcurrentFlows.MessageMultiplexing.Messages;
+﻿using ConcurrentFlows.MessagingLibrary.Model;
 
 namespace ConcurrentFlows.MessageMultiplexing.Model.Messages.Internal
 {
