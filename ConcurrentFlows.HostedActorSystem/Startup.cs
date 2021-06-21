@@ -26,18 +26,18 @@ namespace ConcurrentFlows.HostedActorSystem
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.HostedActorSystem", Version = "v1" });
-            });
-            services.AddAnswerStream();
-            services.AddActor<GetFactorialQueryActor, GetFactorialActorQuery>();
-            services.AddActor<GetReverseRangeQueryActor, GetReverseRangeActorQuery>();
-            services.AddActor<GetMessageQueryActor, GetMessageActorQuery>();
-        }
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddControllers();
+    services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.HostedActorSystem", Version = "v1" });
+    });
+    services.AddAnswerStream();
+    services.AddActor<GetFactorialQueryActor, GetFactorialActorQuery>();
+    services.AddActor<GetReverseRangeQueryActor, GetReverseRangeActorQuery>();
+    services.AddActor<GetMessageQueryActor, GetMessageActorQuery>();
+}
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
