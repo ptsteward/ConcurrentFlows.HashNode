@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace ConcurrentFlows.HostedActorSystem.ActorSystem.Infrastructure
 {
-    public abstract class QueryActor<TQuery, TPayload, TAnswer>
+    public abstract class QueryActor<TQuery>
         : BackgroundService
-        where TQuery : ActorQuery<TPayload, TAnswer>
     {
         protected readonly ChannelReader<KeyValuePair<Guid, TQuery>> queryReader;
-        protected readonly ChannelWriter<KeyValuePair<Guid, TAnswer>> answerWriter;
+        protected readonly ChannelWriter<KeyValuePair<Guid, dynamic>> answerWriter;
 
         public QueryActor(
             ChannelReader<KeyValuePair<Guid, TQuery>> queryReader, 
-            ChannelWriter<KeyValuePair<Guid, TAnswer>> answerWriter)
+            ChannelWriter<KeyValuePair<Guid, dynamic>> answerWriter)
         {
             this.queryReader = queryReader ?? throw new ArgumentNullException(nameof(queryReader));
             this.answerWriter = answerWriter ?? throw new ArgumentNullException(nameof(answerWriter));

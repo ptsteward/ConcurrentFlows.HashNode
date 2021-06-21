@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace ConcurrentFlows.HostedActorSystem.ActorSystem.Actors
 {
-    public class GetFactorialQueryActor : QueryActor<GetFactorialActorQuery, int, int>
+    public class GetFactorialQueryActor : QueryActor<GetFactorialActorQuery>
     {
-        private readonly IAnswerStream<IAsyncEnumerable<int>> actorStream;
+        private readonly IAnswerStream actorStream;
 
         public GetFactorialQueryActor(
             ChannelReader<KeyValuePair<Guid, GetFactorialActorQuery>> queryReader,
-            ChannelWriter<KeyValuePair<Guid, int>> answerWriter,
-            IAnswerStream<IAsyncEnumerable<int>> actorStream)
+            ChannelWriter<KeyValuePair<Guid, dynamic>> answerWriter,
+            IAnswerStream actorStream)
             : base(queryReader, answerWriter)
         {
             this.actorStream = actorStream ?? throw new ArgumentNullException(nameof(actorStream));
@@ -25,9 +25,9 @@ namespace ConcurrentFlows.HostedActorSystem.ActorSystem.Actors
         public override async Task HandleAsync(KeyValuePair<Guid, GetFactorialActorQuery> query, CancellationToken stoppingToken)
         {
             var rangeQuery = new GetReverseRangeActorQuery(query.Value.Payload - 1);
-            var result = await actorStream.SubmitQuery<GetReverseRangeActorQuery, int>(rangeQuery);
+            IAsyncEnumerable<int> result = await actorStream.SubmitQuery(rangeQuery);
             var factorial = await result.AggregateAsync(query.Value.Payload, (x, y) => x * y);
-            var answer = new KeyValuePair<Guid, int>(query.Key, factorial);
+            var answer = new KeyValuePair<Guid, dynamic>(query.Key, factorial);
             await answerWriter.WriteAsync(answer);
         }
     }

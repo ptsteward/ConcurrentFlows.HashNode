@@ -7,17 +7,16 @@ namespace ConcurrentFlows.HostedActorSystem.ActorSystem.Infrastructure
 {
     public static class RegistrationExtensions
     {
-        public static IServiceCollection AddActor<TActor, TQuery, TPayload, TAnswer>(this IServiceCollection services)
-            where TActor : QueryActor<TQuery, TPayload, TAnswer>
-            where TQuery : ActorQuery<TPayload, TAnswer>
+        public static IServiceCollection AddActor<TActor, TQuery>(this IServiceCollection services)
+            where TActor : QueryActor<TQuery>
         {
-            services.AddSingleton<IAnswerStream<TAnswer>, AnswerStream<TAnswer>>();
-            services.AddHostedService(sp => sp.GetRequiredService<IAnswerStream<TAnswer>>());
+            services.AddSingleton<IAnswerStream, AnswerStream>();
+            services.AddHostedService(sp => sp.GetRequiredService<IAnswerStream>());
             services.AddHostedService<TActor>();
             var inputChannel = Channel.CreateUnbounded<KeyValuePair<Guid, TQuery>>();
             services.AddSingleton(inputChannel.Writer);
             services.AddSingleton(inputChannel.Reader);
-            var answerChannel = Channel.CreateUnbounded<KeyValuePair<Guid, TAnswer>>();
+            var answerChannel = Channel.CreateUnbounded<KeyValuePair<Guid, dynamic>>();
             services.AddSingleton(answerChannel.Writer);
             services.AddSingleton(answerChannel.Reader);
             return services;

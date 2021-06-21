@@ -33,8 +33,9 @@ namespace ConcurrentFlows.HostedActorSystem
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.HostedActorSystem", Version = "v1" });
             });
-            services.AddActor<GetFactorialQueryActor, GetFactorialActorQuery, int, int>();
-            services.AddActor<GetReverseRangeQueryActor, GetReverseRangeActorQuery, int, IAsyncEnumerable<int>>();
+            services.AddActor<GetFactorialQueryActor, GetFactorialActorQuery>();
+            services.AddActor<GetReverseRangeQueryActor, GetReverseRangeActorQuery>();
+            services.AddActor<GetMessageQueryActor, GetMessageActorQuery>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -2,5 +2,5 @@
 
 namespace ConcurrentFlows.HostedActorSystem.Queries.Actor
 {
-    public record GetFactorialActorQuery(int Payload) : ActorQuery<int, object>(Payload);
+    public record GetMessageActorQuery(string Payload) : ActorQuery<string, string>(Payload);
 }
