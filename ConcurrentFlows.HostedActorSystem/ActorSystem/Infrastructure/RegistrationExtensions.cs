@@ -9,13 +9,18 @@ namespace ConcurrentFlows.HostedActorSystem.ActorSystem.Infrastructure
     {
         public static IServiceCollection AddActor<TActor, TQuery>(this IServiceCollection services)
             where TActor : QueryActor<TQuery>
-        {
-            services.AddSingleton<IAnswerStream, AnswerStream>();
-            services.AddHostedService(sp => sp.GetRequiredService<IAnswerStream>());
+        {            
             services.AddHostedService<TActor>();
             var inputChannel = Channel.CreateUnbounded<KeyValuePair<Guid, TQuery>>();
             services.AddSingleton(inputChannel.Writer);
-            services.AddSingleton(inputChannel.Reader);
+            services.AddSingleton(inputChannel.Reader);            
+            return services;
+        }
+
+        public static IServiceCollection AddAnswerStream(this IServiceCollection services)
+        {
+            services.AddSingleton<IAnswerStream, AnswerStream>();
+            services.AddHostedService(sp => sp.GetRequiredService<IAnswerStream>());
             var answerChannel = Channel.CreateUnbounded<KeyValuePair<Guid, dynamic>>();
             services.AddSingleton(answerChannel.Writer);
             services.AddSingleton(answerChannel.Reader);

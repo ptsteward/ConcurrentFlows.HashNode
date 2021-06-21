@@ -33,6 +33,7 @@ namespace ConcurrentFlows.HostedActorSystem
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConcurrentFlows.HostedActorSystem", Version = "v1" });
             });
+            services.AddAnswerStream();
             services.AddActor<GetFactorialQueryActor, GetFactorialActorQuery>();
             services.AddActor<GetReverseRangeQueryActor, GetReverseRangeActorQuery>();
             services.AddActor<GetMessageQueryActor, GetMessageActorQuery>();
