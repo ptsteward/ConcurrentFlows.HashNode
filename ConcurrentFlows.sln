@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31320.298
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.TransformerDemo", "ConcurrentFlows.TransformerDemo\ConcurrentFlows.TransformerDemo.csproj", "{0B9F4A2D-EFA3-4FE0-8FE2-D9E9FC8BA6BE}"
 EndProject
@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.DapperResil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.HostedActorSystem", "ConcurrentFlows.HostedActorSystem\ConcurrentFlows.HostedActorSystem.csproj", "{70923A84-D237-4035-9C16-9D6049F50953}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentFlows.ProcessManagement", "ConcurrentFlows.ProcessManagement\ConcurrentFlows.ProcessManagement.csproj", "{84621CA1-513E-4FF3-9DBE-F2566513F45F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.ProcessManagement", "ConcurrentFlows.ProcessManagement\ConcurrentFlows.ProcessManagement.csproj", "{84621CA1-513E-4FF3-9DBE-F2566513F45F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentFlows.AsyncMediator1", "ConcurrentFlows.AsyncMediator1\ConcurrentFlows.AsyncMediator1.csproj", "{1591474D-C1D0-484E-858D-55D7207AF47E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{84621CA1-513E-4FF3-9DBE-F2566513F45F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84621CA1-513E-4FF3-9DBE-F2566513F45F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84621CA1-513E-4FF3-9DBE-F2566513F45F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1591474D-C1D0-484E-858D-55D7207AF47E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1591474D-C1D0-484E-858D-55D7207AF47E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1591474D-C1D0-484E-858D-55D7207AF47E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1591474D-C1D0-484E-858D-55D7207AF47E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
