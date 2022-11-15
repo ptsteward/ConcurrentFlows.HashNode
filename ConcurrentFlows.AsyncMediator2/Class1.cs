@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Concurrent;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace ConcurrentFlows.AsyncMediator2;
 
@@ -119,17 +114,13 @@ internal sealed class EnvelopeOutbox<TPayload> : IOutbox<TPayload>
     private volatile int leaseCount = 0;
     private volatile bool complete = false;
 
-    private EnvelopeOutbox(
+    public EnvelopeOutbox(
         Envelope<TPayload> originator,
         Action<Guid> destructor)
     {
         this.originator = originator;
         this.destructor = destructor;
     }
-
-    internal static OutboxFactory<TPayload> CreateOutbox
-        => (originator, destructor)
-            => new EnvelopeOutbox<TPayload>(originator, destructor);
 
     public void Complete()
         => complete = true;
@@ -195,13 +186,14 @@ internal sealed class ChannelSink<TPayload>
 {
     private readonly ChannelReader<Envelope<TPayload>> reader;
     private readonly IDisposable sinkLink;
+    private bool disposed = false;
 
     public ChannelSink(
         ChannelReader<Envelope<TPayload>> reader,
-        IDisposable fiberLink)
+        IDisposable sinkLink)
     {
         this.reader = reader;
-        this.sinkLink = fiberLink;
+        this.sinkLink = sinkLink;
     }
 
     public IAsyncEnumerable<Envelope<TPayload>> ConsumeAsync(CancellationToken cancelToken = default)
@@ -215,8 +207,9 @@ internal sealed class ChannelSink<TPayload>
 
     private void Dispose(bool disposing)
     {
-        sinkLink.Dispose();
-        Dispose();
+        if (!disposed && disposing)
+            sinkLink.Dispose();
+        disposed = true;
     }
 }
 
@@ -232,7 +225,9 @@ internal sealed class ChannelSource<TPayload>
     public ChannelSource(OutboxFactory<TPayload> outboxFactory)
         => this.factory = outboxFactory;
 
-    public async ValueTask<bool> SendAsync(Envelope<TPayload> envelope, CancellationToken cancelToken = default)
+    public async ValueTask<bool> SendAsync(
+        Envelope<TPayload> envelope,
+        CancellationToken cancelToken = default)
     {
         cancelToken.ThrowIfCancellationRequested();
         var outboxId = Guid.NewGuid();
@@ -249,19 +244,78 @@ internal sealed class ChannelSource<TPayload>
         outbox.Complete();
         var results = await Task.WhenAll(writing);
 
-        return results.AllTrue();
+        return results.All(s => s);
     }
 
     public SinkFactory<TPayload> SinkFactory
         => () =>
         {
             var linkId = Guid.NewGuid();
-            var fiberLink = new SinkLink(linkId, id => channels.Remove(id, out _));
+            var sinkLink = new SinkLink(linkId, id => channels.Remove(id, out _));
             var channel = Channel.CreateUnbounded<Envelope<TPayload>>();
             channels.TryAdd(linkId, channel);
-            var channelSink = new ChannelSink<TPayload>(channel, fiberLink);
+            var channelSink = new ChannelSink<TPayload>(channel, sinkLink);
             return channelSink;
         };
+}
+
+public static class Registrations
+{
+    public static IServiceCollection AddMsgChannel<TPayload>(this IServiceCollection services)
+        where TPayload : notnull
+        => services
+            .SetSingleton<OutboxFactory<TPayload>>(_
+            => (originator, destructor)
+                => new EnvelopeOutbox<TPayload>(originator, destructor))
+            .SetSingleton<SinkFactory<TPayload>>(sp =>
+            {
+                var source = sp.GetRequiredService<IChannelSource<TPayload>>();
+                var linkable = source as ILinkableSource<TPayload>
+                    ?? throw new ArgumentException($"Source {source.GetType().Name} must be linkable", nameof(source));
+                return linkable.SinkFactory;
+            })
+            .SetSingleton<IChannelSource<TPayload>, ChannelSource<TPayload>>()
+            .AddTransient<IChannelSink<TPayload>>(sp => sp.GetRequiredService<SinkFactory<TPayload>>().Invoke());
+}
+
+public sealed record Message(int Id);
+
+public sealed class Originator
+{
+    private readonly IChannelSource<Message> source;
+
+    public Originator(IChannelSource<Message> source)
+        => this.source = source;
+
+    public async Task ProduceManyAsync(int count, CancellationToken cancelToken)
+    {
+        var messages = Enumerable.Range(0, count)
+            .Select(i => new Message(i).ToEnvelope());
+        var sending = messages.Select(async msg => await source.SendAsync(msg));
+        await Task.WhenAll(sending);
+    }
+}
+
+public sealed class Consumer
+{
+    private readonly IChannelSink<Message> sink;
+
+    public Consumer(IChannelSink<Message> sink)
+        => this.sink = sink;
+
+    public async Task<IEnumerable<Message>> CollectAllAsync(CancellationToken cancelToken)
+    {
+        var set = new List<Message>();
+        try
+        {
+
+            await foreach (var envelope in sink.ConsumeAsync(cancelToken))
+                set.Add(envelope.Payload);
+        }
+        catch (OperationCanceledException)
+        { /*We're Done*/ }
+        return set;
+    }
 }
 
 public static class Extensions
@@ -311,25 +365,18 @@ public static class Extensions
             Func<Task> onCompleted,
             Func<Task> onFailure)
         {
-            try
-            {
-                if (await completion.TryWaitAsync(timeout))
-                    await onCompleted();
-                else
-                    await onFailure();
-            }
-            catch (Exception ex)
-            {
-
-            }
+            if (await completion.TryWaitAsync(timeout))
+                await onCompleted();
+            else
+                await onFailure();
         }
     }
 
-public static async Task<bool> TryWaitAsync(this Task task, TimeSpan timeout)
-{
-    await Task.WhenAny(task, Task.Delay(timeout));
-    return task.IsCompletedSuccessfully;
-}
+    public static async Task<bool> TryWaitAsync(this Task task, TimeSpan timeout)
+    {
+        await Task.WhenAny(task, Task.Delay(timeout));
+        return task.IsCompletedSuccessfully;
+    }
 
     public static bool AllTrue(this IEnumerable<bool> set)
         => !set.Any(x => !x);
