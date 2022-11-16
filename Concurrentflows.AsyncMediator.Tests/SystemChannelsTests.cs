@@ -6,8 +6,7 @@ namespace Concurrentflows.AsyncMediator.Tests;
 public class SystemChannelsTests
 {
     [Fact]
-    public async Task MultipleChannels_MultiplePipes(
-        )
+    public async Task MultipleChannels_MultiplePipes()
     {
         var channel1 = Channel.CreateUnbounded<int>();
         var channel2 = Channel.CreateUnbounded<int>();

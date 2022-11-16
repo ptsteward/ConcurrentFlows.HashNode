@@ -36,21 +36,21 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection SetSingleton<TService>(
+    public static IServiceCollection SetSingleton<TImplementation>(
         this IServiceCollection services,
-        TService instance)
-        where TService : class
+        Func<IServiceProvider, TImplementation> factory)
+        where TImplementation : class
     {
-        services.TryAddSingleton(instance);
+        services.TryAddSingleton(factory);
         return services;
     }
 
     public static IServiceCollection SetSingleton<TService>(
         this IServiceCollection services,
-        Func<IServiceProvider, TService> factory)
+        TService instance)
         where TService : class
     {
-        services.TryAddSingleton(factory);
+        services.TryAddSingleton<TService>(instance);
         return services;
     }
 
@@ -60,36 +60,6 @@ public static class ServiceCollectionExtensions
         where TImplementation : class, TService
     {
         services.TryAddSingleton<TService, TImplementation>();
-        return services;
-    }
-
-    public static IServiceCollection SetSingleton<TService, TImplementation>(
-        this IServiceCollection services,
-        Func<TImplementation> factory)
-        where TService : class
-        where TImplementation : class, TService
-    {
-        services.TryAddSingleton(factory);
-        return services;
-    }
-
-    public static IServiceCollection SetSingleton<TService, TImplementation>(
-        this IServiceCollection services,
-        Func<IServiceProvider, TImplementation> factory)
-        where TService : class
-        where TImplementation : class, TService
-    {
-        services.TryAddSingleton(factory);
-        return services;
-    }
-
-    public static IServiceCollection SetSingleton<TService, TImplementation>(
-        this IServiceCollection services,
-        TImplementation instance)
-        where TService : class
-        where TImplementation : class, TService
-    {
-        services.TryAddSingleton<TService>(instance);
         return services;
     }
 }

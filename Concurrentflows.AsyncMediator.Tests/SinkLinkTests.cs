@@ -1,3 +1,5 @@
+using ConcurrentFlows.AsyncMediator2.MsgChannels.Broadcasting;
+
 namespace Concurrentflows.AsyncMediator.Tests;
 
 public class SinkLinkTests

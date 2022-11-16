@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using ConcurrentFlows.AsyncMediator2.Examples;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
