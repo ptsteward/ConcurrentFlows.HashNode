@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using System.Threading.Tasks.Dataflow;
 
 namespace ConcurrentFlows.AsyncMediator3;
 
 public abstract record Envelope
 {
-    protected string? _messageId;
-    public virtual string MessageId
-        => _messageId ??= $"{GetHashCode()}";
+    public virtual string MessageId 
+        => $"{GetHashCode()}";
 }
 
 public sealed record Envelope<TPayload>(
@@ -42,32 +42,26 @@ public sealed record Envelope<TPayload>(
 
 public sealed record Envelope<TPayload, TReply>(
     TPayload Payload,
-    TaskCompletionSource<TReply?> TaskSource,
-    Task<TReply?> Execution)
+    BufferBlock<(TReply? reply, Exception? failure)> Buffer,
+    Task Execution)
     : Envelope
     where TPayload : notnull
-    where TReply : notnull
 {
-    private TaskCompletionSource<TReply?> TaskSource { get; } = TaskSource;
-    private Task<TReply?> Execution { get; } = Execution;
-
     public Exception? Failure { get; private set; }
 
-    public void Complete(TReply result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
-        TaskSource.TrySetResult(result);
+    public async Task Complete()
+    {        
+        Buffer.Complete();
+        await Execution;
     }
 
-    public void Fail(Exception exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-        TaskSource.TrySetException(exception);
-        Failure = exception;
-    }
+    public Task Reply(TReply? reply, Exception? failure)
+        => Buffer.SendAsync((reply, failure));
 
-    public TaskAwaiter<TReply?> GetAwaiter()
-        => Execution.GetAwaiter();
+    public IAsyncEnumerator<(TReply? reply, Exception? failure)> GetAsyncEnumerator(
+        CancellationToken cancelToken = default)
+        => Buffer.ReceiveAllAsync()
+            .GetAsyncEnumerator(cancelToken);
 }
 
 public sealed record Command<TPayload>(
@@ -97,7 +91,7 @@ public interface IAsyncMediator
         Query<TPayload, TReply> query,
         CancellationToken cancelToken = default)
         where TPayload : notnull
-        where TReply : notnull;
+        ;
 }
 
 internal interface IChannelSource<TPayload>
@@ -117,7 +111,7 @@ public interface IChannelSink<TPayload>
 
 internal interface IChannelSource<TPayload, TReply>
     where TPayload : notnull
-    where TReply : notnull
+    
 {
     ValueTask SendAsync(
         Envelope<TPayload, TReply> envelope,
@@ -126,7 +120,7 @@ internal interface IChannelSource<TPayload, TReply>
 
 public interface IChannelSink<TPayload, TReply>
     where TPayload : notnull
-    where TReply : notnull
+    
 {
     IAsyncEnumerable<Envelope<TPayload, TReply>> ConsumeAsync(
         CancellationToken cancelToken = default);
@@ -178,7 +172,7 @@ internal sealed class ChannelSink<TPayload>
 internal sealed class ChannelSink<TPayload, TReply>
     : ChannelSinkBase<Envelope<TPayload, TReply>>
     where TPayload : notnull
-    where TReply : notnull
+    
 {
     public ChannelSink(
         ChannelReader<Envelope<TPayload, TReply>> reader,
@@ -241,7 +235,7 @@ internal sealed class ChannelSource<TPayload>
 internal sealed class ChannelSource<TPayload, TReply>
     : ChannelSourceBase<Envelope<TPayload, TReply>>
     where TPayload : notnull
-    where TReply : notnull
+    
 {
     public ChannelSource(OutboxFactory<Envelope<TPayload, TReply>> outboxFactory)
         : base(outboxFactory) { }
@@ -277,22 +271,9 @@ internal abstract class EnvelopeOutboxBase<TEnvelope>
     public void Complete()
         => complete = true;
 
-    public abstract TEnvelope GetEnvelope()
-    {
-        Interlocked.Increment(ref leaseCount);
+    public abstract TEnvelope GetEnvelope();
 
-        var id = Guid.NewGuid();
-        var envelope = originator.NewEnvelope(
-            originator,
-            TimeSpan.FromSeconds(30),
-            () => EnvelopeDestructorAsync(id),
-            () => EnvelopeDestructorAsync(id));
-
-        pool[id] = envelope;
-        return envelope;
-    }
-
-    private async Task EnvelopeDestructorAsync(Guid id)
+    protected virtual async Task EnvelopeDestructorAsync(Guid id)
     {
         Interlocked.Decrement(ref leaseCount);
 
@@ -301,16 +282,10 @@ internal abstract class EnvelopeOutboxBase<TEnvelope>
         await CloseOutPool(id);
     }
 
-    private async Task CloseOutPool(Guid id)
+    protected virtual Task CloseOutPool(Guid id)
     {
-        await Task.WhenAll(pool.Select(async e => await e.Value));
-
-        if (failures.Any())
-            originator.Fail(new AggregateException(failures));
-        else
-            originator.Complete();
-
         destructor(id);
+        return Task.CompletedTask;
     }
 
     private bool ReadyForClosure
@@ -321,19 +296,77 @@ internal sealed class EnvelopeOutbox<TPayload>
     : EnvelopeOutboxBase<Envelope<TPayload>>
     where TPayload : notnull
 {
+    public EnvelopeOutbox(Envelope<TPayload> originator, Action<Guid> destructor) 
+        : base(originator, destructor) { }
+
     public override Envelope<TPayload> GetEnvelope()
     {
         Interlocked.Increment(ref leaseCount);
 
         var id = Guid.NewGuid();
-        var envelope = originator.NewEnvelope(
-            originator,
+        var envelope = originator.Payload.ToEnvelope(
             TimeSpan.FromSeconds(30),
             () => EnvelopeDestructorAsync(id),
             () => EnvelopeDestructorAsync(id));
 
         pool[id] = envelope;
         return envelope;
+    }
+
+    protected override Task EnvelopeDestructorAsync(Guid id)
+    {
+        var envelope = pool[id];
+        failures.MaybeAdd(envelope?.Failure);
+        return base.EnvelopeDestructorAsync(id);
+    }
+
+    protected override async Task CloseOutPool(Guid id)
+    {
+        await Task.WhenAll(pool.Select(async e => await e.Value));
+
+        if (failures.Any())
+            originator.Fail(new AggregateException(failures));
+        else
+            originator.Complete();
+
+        await base.CloseOutPool(id);
+    }
+}
+
+internal sealed class EnvelopeOutbox<TPayload, TReply>
+    : EnvelopeOutboxBase<Envelope<TPayload, TReply>>
+    where TPayload : notnull
+    
+{
+    public EnvelopeOutbox(Envelope<TPayload, TReply> originator, Action<Guid> destructor)
+        : base(originator, destructor) { }
+
+    public override Envelope<TPayload, TReply> GetEnvelope()
+    {
+        Interlocked.Increment(ref leaseCount);
+
+        var id = Guid.NewGuid();
+        var envelope = originator.Payload.ToEnvelope<TPayload, TReply>(
+            TimeSpan.FromSeconds(30),
+            () => EnvelopeDestructorAsync(id),
+            () => EnvelopeDestructorAsync(id));
+
+        pool[id] = envelope;
+        return envelope;
+    }
+
+    protected override Task EnvelopeDestructorAsync(Guid id) => base.EnvelopeDestructorAsync(id);
+
+    protected override async Task CloseOutPool(Guid id)
+    {
+        await Task.WhenAll(pool.Select(async e => await e.Value));
+
+        if (failures.Any())
+            originator.Fail(new AggregateException(failures));
+        else
+            originator.Complete();
+
+        await base.CloseOutPool(id);
     }
 }
 
@@ -385,34 +418,128 @@ internal sealed class AsyncMediator
     public IAsyncEnumerable<Exception?> ExecuteAsync<TPayload>(Command<TPayload> command, CancellationToken cancelToken = default) where TPayload : notnull => throw new NotImplementedException();
     public IAsyncEnumerable<(TReply? Reply, Exception? Failure)> ExecuteAsync<TPayload, TReply>(Query<TPayload, TReply> query, CancellationToken cancelToken = default)
         where TPayload : notnull
-        where TReply : notnull => throw new NotImplementedException();
+        => throw new NotImplementedException();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         => await Task.Yield();
 }
 
-internal static class Extensions
-{
-    public static Envelope<TPayload> FromEnvelope<TPayload>(
-        this Envelope<TPayload> envelope,
-        TimeSpan timeout,
-        Func<Task> onCompleted,
-        Func<Task> onFailure)
-        where TPayload : notnull
-        => envelope
-            .Payload
-            .ToEnvelope(timeout, onCompleted, onFailure);
+//public static class FromEnvelopeExtensions
+//{
+//    private static readonly Expression TimeoutExpr 
+//        = Expression.Parameter(typeof(TimeSpan), "timeout");
 
-    public static Envelope<TPayload, TReply> FromEnvelope<TPayload, TReply>(
-        this Envelope<TPayload> envelope,
-        TimeSpan timeout,
-        Func<Task> onCompleted,
-        Func<Task> onFailure)
-        where TPayload : notnull
-        where TReply : notnull
-        => envelope
-            .Payload
-            .ToEnvelope<TPayload, TReply>(timeout, onCompleted, onFailure);
+//    private static readonly Expression OnCompletedExpr
+//        = Expression.Parameter(typeof(Func<Task>), "onCompleted");
+
+//    private static readonly Expression OnFailureExpr
+//        = Expression.Parameter(typeof(Func<Task>), "onFailure");
+
+//    private static readonly Type[] ArgumentTypes
+//        = new[]
+//        {
+//            typeof(TimeSpan),
+//            typeof(Func<Task>),
+//            typeof(Func<Task>)
+//        };
+
+//    private static MethodInfo PayloadEnvelopeMethod<TEnvelope>(
+//        this TEnvelope envelope)
+//        where TEnvelope : Envelope
+//        => typeof(FromEnvelopeExtensions)
+//            .GetMethod("FromEnvelope", 1, 
+//            ArgumentTypes.Prepend(typeof(TEnvelope)).ToArray());
+
+//    private static MethodInfo ReplyEnvelopeMethod<TEnvelope>(
+//        this TEnvelope envelope)
+//        where TEnvelope : Envelope
+//        => typeof(FromEnvelopeExtensions)
+//            .GetMethod("FromEnvelope", 1,
+//            ArgumentTypes.Prepend(typeof(TEnvelope)).ToArray());
+//}
+
+public static class Extensions
+{
+    //public static TEnvelope FromEnvelope<TEnvelope>(
+    //    this TEnvelope envelope,
+    //    TimeSpan timeout,
+    //    Func<Task> onCompleted,
+    //    Func<Task> onFailure)
+    //    where TEnvelope : Envelope
+    //{
+    //    var typeArgs = typeof(TEnvelope).GenericTypeArguments;
+    //    var payloadType = typeArgs.Count() > 0 
+    //        ? Expression.Parameter(typeArgs[0], "TPayload")
+    //        : null;
+    //    var replyType = typeArgs.Count() > 1
+    //        ? Expression.Parameter(typeArgs[1], "TReply")
+    //        : null;
+
+    //    var paramTypes = new[]
+    //    {
+    //        typeof(TEnvelope),
+    //        typeof(TimeSpan),
+    //        typeof(Func<Task>),
+    //        typeof(Func<Task>)
+    //    };
+
+    //    var getCommandEnvelope = typeof(Extensions).GetMethod(nameof(FromEnvelope), 1, paramTypes);
+    //    //var getQueryEnvelope = typeof(Extensions).GetMethod(nameof(FromEnvelope), 2, paramTypes);
+        
+    //    var exp1 = Expression.Parameter(typeof(TEnvelope), nameof(envelope));
+    //    var exp2 = Expression.Parameter(typeof(TimeSpan), nameof(timeout));
+    //    var exp3 = Expression.Parameter(typeof(Func<Task>), nameof(onCompleted));   
+    //    var exp4 = Expression.Parameter(typeof(Func<Task>), nameof(onFailure));
+    //    var paramExpressions = new[]
+    //    {
+    //        exp1,
+    //        exp2,
+    //        exp3,
+    //        exp4
+    //    };
+    //    var cmdArgs = paramExpressions.Prepend(payloadType!);
+    //    var queryArgs = paramExpressions.Prepend(replyType!).Prepend(payloadType!);
+
+    //    var exp5 = Expression.Call(null, getCommandEnvelope!, cmdArgs);
+    //    var exp7 = Expression.Lambda(exp5, cmdArgs);
+    //    var x = exp7.Compile().DynamicInvoke();
+
+    //    //var exp6 = Expression.Call(null, getQueryEnvelope!, queryArgs);
+    //    //var exp8 = Expression.Lambda(exp6, cmdArgs);
+    //    //var x = exp8.Compile().DynamicInvoke();
+
+    //    return (TEnvelope)x!;
+
+    //    //if (typeArgs.Count() == 1)
+    //    //    return Expression.Lambda(exp5, paramExpressions))
+    //    //else if (type.IsAssignableTo(OpenQueryType))
+    //    //    return envelope.FromEnvelope()
+    //    //return type switch
+    //    //{
+    //    //    type.IsAssignableFrom(typeof(Envelope<>))
+    //    //}
+    //}
+
+    //public static Envelope<TPayload> FromEnvelope<TPayload>(
+    //    this Envelope<TPayload> envelope,
+    //    TimeSpan timeout,
+    //    Func<Task> onCompleted,
+    //    Func<Task> onFailure)
+    //    where TPayload : notnull
+    //    => envelope
+    //        .Payload
+    //        .ToEnvelope(timeout, onCompleted, onFailure);
+
+    //public static Envelope<TPayload, TReply> FromEnvelope<TPayload, TReply>(
+    //    this Envelope<TPayload> envelope,
+    //    TimeSpan timeout,
+    //    Func<Task> onCompleted,
+    //    Func<Task> onFailure)
+    //    where TPayload : notnull
+    //    
+    //    => envelope
+    //        .Payload
+    //        .ToEnvelope<TPayload, TReply>(timeout, onCompleted, onFailure);
 
     public static Envelope<TPayload> ToEnvelope<TPayload>(
         this TPayload payload,
@@ -459,7 +586,8 @@ internal static class Extensions
             Func<Task> onCompleted,
             Func<Task> onFailure)
         {
-            if (await completion.TryWaitAsync(timeout))
+            var failed = await completion.TryWaitAsync(timeout);
+            if (failed is null)
                 await onCompleted();
             else
                 await onFailure();
@@ -473,73 +601,77 @@ internal static class Extensions
         Func<Task> onCompleted,
         Func<Task> onFailure)
         where TPayload : notnull
-        where TReply : notnull
-        => new TaskCompletionSource<TReply?>()
+        => new BufferBlock<(TReply? reply, Exception? failure)>()
             .CreateEnvelope(payload, timeout, onCompleted, onFailure);
 
     public static Envelope<TPayload, TReply> ToEnvelope<TPayload, TReply>(
         this TPayload payload,
         TimeSpan timeout)
         where TPayload : notnull
-        where TReply : notnull
         => payload.ToEnvelope<TPayload, TReply>(timeout, () => Task.CompletedTask, () => Task.CompletedTask);
 
     public static Envelope<TPayload, TReply> ToEnvelope<TPayload, TReply>(
         this TPayload payload)
         where TPayload : notnull
-        where TReply : notnull
         => payload.ToEnvelope<TPayload, TReply>(TimeSpan.MaxValue, () => Task.CompletedTask, () => Task.CompletedTask);
 
     private static Envelope<TPayload, TReply> CreateEnvelope<TPayload, TReply>(
-        this TaskCompletionSource<TReply?> taskSource,
+        this BufferBlock<(TReply? reply, Exception? failure)> buffer,
         TPayload payload,
         TimeSpan timeout,
         Func<Task> onCompleted,
         Func<Task> onFailure)
         where TPayload : notnull
-        where TReply : notnull
+        
         => new Envelope<TPayload, TReply>(
             Payload: payload,
-            TaskSource: taskSource,
-            Execution: taskSource.CreateExecutionMonitor(timeout, onCompleted, onFailure));
+            Buffer: buffer,
+            Execution: buffer.CreateExecutionMonitor(timeout, onCompleted, onFailure));
 
-    private static Task<TReply?> CreateExecutionMonitor<TReply>(this TaskCompletionSource<TReply?> source,
+    private static Task CreateExecutionMonitor<TReply>(
+        this BufferBlock<(TReply? reply, Exception? failure)> buffer,
         TimeSpan timeout,
         Func<Task> onCompleted,
         Func<Task> onFailure)
-        where TReply : notnull
+        
     {
-        return AsyncExecutionMonitor(source.Task, timeout, onCompleted, onFailure);
+        return AsyncExecutionMonitor(buffer.Completion, timeout, onCompleted, onFailure);
 
-        async Task<TReply?> AsyncExecutionMonitor(
-            Task<TReply?> completion,
+        async Task AsyncExecutionMonitor(
+            Task completion,
             TimeSpan timeout,
             Func<Task> onCompleted,
             Func<Task> onFailure)
         {
-            var attempt = await completion.TryWaitAsync(timeout);
-            if (attempt.success)
+            var failed = await completion.TryWaitAsync(timeout);
+            if (failed is null)
                 await onCompleted();
             else
                 await onFailure();
-            return attempt.reply;
+            buffer.Complete();
         }
     }
 
 
-    public static async Task<bool> TryWaitAsync(this Task task, TimeSpan timeout)
+    public static async Task<Exception?> TryWaitAsync(this Task task, TimeSpan timeout)
     {
-        await Task.WhenAny(task, Task.Delay(timeout));
-        return task.IsCompletedSuccessfully;
-    }
-
-    public static async Task<(bool success, TReply? reply)> TryWaitAsync<TReply>(this Task<TReply> task, TimeSpan timeout)
-    {
-        await Task.WhenAny(task, Task.Delay(timeout));
+        await Task.WhenAny(task.WaitAsync(timeout));
         return task.IsCompletedSuccessfully switch
         {
-            true => (success: true, reply: await task),
-            false => (success: false, reply: default)
+            true => null,
+            false => task.Exception is not null
+                ? task.Exception.GetBaseException()
+                : new TimeoutException()
+        };
+    }
+
+    public static async Task<(TReply? reply, Exception? failure)> TryWaitAsync<TReply>(this Task<TReply> task, TimeSpan timeout)
+    {
+        await Task.WhenAny(task.WaitAsync(timeout));
+        return task.IsCompletedSuccessfully switch
+        {
+            true => (reply: await task, failure: null),
+            false => (reply: default, failure: new TimeoutException())
         };
     }
 

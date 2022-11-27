@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 
 namespace Concurrentflows.AsyncMediator.Tests;
 

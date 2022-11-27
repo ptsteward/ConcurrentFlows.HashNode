@@ -1,12 +1,6 @@
-﻿using ConcurrentFlows.AsyncMediator2.Examples;
-using FluentAssertions;
+﻿using ConcurrentFlows.AsyncMediator2;
+using ConcurrentFlows.AsyncMediator2.Examples;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Concurrentflows.AsyncMediator.Tests;
 
