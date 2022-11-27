@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.AsyncMediat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.AsyncMediator2", "ConcurrentFlows.AsyncMediator2\ConcurrentFlows.AsyncMediator2.csproj", "{CCA12078-2E30-416C-822F-B10EB08A3D0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concurrentflows.AsyncMediator.Tests", "Concurrentflows.AsyncMediator.Tests\Concurrentflows.AsyncMediator.Tests.csproj", "{DF990306-411F-4DA8-8C5F-A50DF8A9A506}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Concurrentflows.AsyncMediator.Tests", "Concurrentflows.AsyncMediator.Tests\Concurrentflows.AsyncMediator.Tests.csproj", "{DF990306-411F-4DA8-8C5F-A50DF8A9A506}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrentFlows.AsyncMediator3", "ConcurrentFlows.AsyncMediator3\ConcurrentFlows.AsyncMediator3.csproj", "{C4319FB9-5047-4EFC-904B-60C80CAEA00A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{DF990306-411F-4DA8-8C5F-A50DF8A9A506}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF990306-411F-4DA8-8C5F-A50DF8A9A506}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF990306-411F-4DA8-8C5F-A50DF8A9A506}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4319FB9-5047-4EFC-904B-60C80CAEA00A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4319FB9-5047-4EFC-904B-60C80CAEA00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4319FB9-5047-4EFC-904B-60C80CAEA00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4319FB9-5047-4EFC-904B-60C80CAEA00A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

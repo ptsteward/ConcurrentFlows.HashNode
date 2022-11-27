@@ -29,29 +29,3 @@ public sealed record Envelope<TPayload>(
     public TaskAwaiter GetAwaiter()
         => Execution.GetAwaiter();
 }
-
-public sealed record Envelope<TPayload, TReply>(
-    TPayload Payload,
-    TaskCompletionSource<TReply?> TaskSource,
-    Task<TReply?> Execution)
-    : Envelope
-    where TPayload : notnull
-    where TReply : notnull
-{
-    private TaskCompletionSource<TReply?> TaskSource { get; } = TaskSource;
-    private Task<TReply?> Execution { get; } = Execution;
-
-    public Exception? Failure { get; private set; }
-
-    public void Complete(TReply result)
-        => TaskSource.TrySetResult(result);
-
-    public void Fail(Exception exception)
-    {
-        TaskSource.TrySetException(exception);
-        Failure = exception;
-    }
-
-    public TaskAwaiter<TReply?> GetAwaiter()
-        => Execution.GetAwaiter();
-}
