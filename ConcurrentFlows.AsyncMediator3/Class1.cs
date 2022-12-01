@@ -357,17 +357,17 @@ internal sealed class EnvelopeOutbox<TPayload, TReply>
 
     protected override Task EnvelopeDestructorAsync(Guid id) => base.EnvelopeDestructorAsync(id);
 
-    protected override async Task CloseOutPool(Guid id)
-    {
-        await Task.WhenAll(pool.Select(async e => await e.Value));
+    //protected override async Task CloseOutPool(Guid id)
+    //{
+    //    await Task.WhenAll(pool.Select(async e => await e.Value));
 
-        if (failures.Any())
-            originator.Fail(new AggregateException(failures));
-        else
-            originator.Complete();
+    //    if (failures.Any())
+    //        originator.Fail(new AggregateException(failures));
+    //    else
+    //        originator.Complete();
 
-        await base.CloseOutPool(id);
-    }
+    //    await base.CloseOutPool(id);
+    //}
 }
 
 internal interface ILinkableSource<TEnvelope>
