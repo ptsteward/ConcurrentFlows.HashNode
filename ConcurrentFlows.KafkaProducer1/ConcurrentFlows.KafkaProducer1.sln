@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrentFlows.KafkaProducer1", "ConcurrentFlows.KafkaProducer1\ConcurrentFlows.KafkaProducer1.csproj", "{28E27E9C-D387-485A-8A40-2BCB6F79A48C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{06683445-7972-4BBB-BBDF-CBB5B52B1135}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		topic-init.sh = topic-init.sh
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28E27E9C-D387-485A-8A40-2BCB6F79A48C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28E27E9C-D387-485A-8A40-2BCB6F79A48C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28E27E9C-D387-485A-8A40-2BCB6F79A48C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28E27E9C-D387-485A-8A40-2BCB6F79A48C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {992D67A1-A5B6-43DA-A608-57CAD3527BA9}
+	EndGlobalSection
+EndGlobal

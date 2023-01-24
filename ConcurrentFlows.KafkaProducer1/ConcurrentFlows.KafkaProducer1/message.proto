@@ -1,0 +1,7 @@
+﻿syntax = "proto3";
+
+package ConcurrentFlows.KafkaProducer;
+
+message WidgetEvent {
+	string Greeting = 1;
+}
