@@ -1,5 +1,4 @@
-﻿using ConcurrentFlows.AzureBusSeries.Part4.AppModel;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using static System.Environment;
 
 namespace ConcurrentFlows.AzureBusSeries.Part4.Handlers;

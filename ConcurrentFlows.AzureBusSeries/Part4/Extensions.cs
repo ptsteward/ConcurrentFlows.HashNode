@@ -21,9 +21,5 @@ public static class Extensions
     public static T ThrowIfNull<T>(
         [NotNull] this T? item,
         [CallerArgumentExpression(nameof(item))] string? paramName = null)
-    {
-        if (item is null)
-            throw new ArgumentNullException(paramName);
-        return item;
-    }
+        => item ?? throw new ArgumentNullException(paramName);
 }

@@ -1,6 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Bogus;
-using ConcurrentFlows.AzureBusSeries.Part4.AppModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;

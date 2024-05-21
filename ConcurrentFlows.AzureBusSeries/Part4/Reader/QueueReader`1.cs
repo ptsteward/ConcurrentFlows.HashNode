@@ -1,5 +1,4 @@
 ﻿using Azure.Messaging.ServiceBus;
-using ConcurrentFlows.AzureBusSeries.Part4.AppModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static System.Threading.CancellationTokenSource;
