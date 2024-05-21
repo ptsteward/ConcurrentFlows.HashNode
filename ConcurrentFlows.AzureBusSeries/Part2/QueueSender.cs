@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ConcurrentFlows.AzureBusSeries.Part2;
 
-public class QueueSender
+public sealed class QueueSender
     : BackgroundService
 {
     private readonly ILogger<QueueSender> logger;
