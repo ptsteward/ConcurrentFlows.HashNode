@@ -12,7 +12,7 @@ public static class Extensions
         token.Register(t =>
         {
             if (t is TaskCompletionSource tcs)
-                tcs.SetResult();
+                tcs.TrySetResult();
         }, tcs);
         return tcs.Task;
     }
