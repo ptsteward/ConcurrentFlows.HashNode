@@ -1,4 +1,8 @@
 ﻿using ConcurrentFlows.AzureBusSeries.Part4;
+using ConcurrentFlows.AzureBusSeries.Part4.AppModel;
+using ConcurrentFlows.AzureBusSeries.Part4.Handlers;
+using ConcurrentFlows.AzureBusSeries.Part4.Reader;
+using ConcurrentFlows.AzureBusSeries.Part4.Writer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,8 +15,10 @@ builder.Configuration.AddUserSecrets<Program>();
 builder.Logging.AddConsole();
 
 builder.Services
-    .AddHostedService<QueueSender>()
-    .AddServiceBusForQueueSender();
+    .AddHostedService<QueueWriter>()
+    .AddHostedService<QueueReader<Notification>>()
+    .AddSingleton<IMessageHandler<Notification>, NotificationHandler>()
+    .AddAzureBusComponents();
 
 var app = builder.Build();
 
