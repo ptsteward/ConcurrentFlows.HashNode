@@ -1,8 +1,4 @@
-﻿using Azure.Identity;
-using Azure.Messaging.ServiceBus;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace ConcurrentFlows.AzureBusSeries.Part4;
