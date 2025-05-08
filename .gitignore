@@ -246,11 +246,6 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 
-/Carvana.WebUI.Public/App_Sprites/**/sprite[0-9].png
-/Carvana.WebUI.Public/App_Sprites/**/timeStamp.dat
-/Carvana.WebUI.Public/App_Sprites/blank.gif
-/Carvana.WebUI.Public/App_Sprites/app-sprite.css
-
 # OSX attribute file
 .DS_Store
 *._.DS_Store*
