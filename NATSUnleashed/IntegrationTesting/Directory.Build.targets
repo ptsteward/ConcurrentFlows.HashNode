@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="Formatting" BeforeTargets="Build">
+    <Exec Command="dotnet format --no-restore" />
+  </Target>
+</Project>
